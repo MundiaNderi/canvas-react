@@ -1,40 +1,55 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import "./App.css";
-import CanvasImg from "./assets/canvas.png";
 
 const App = () => {
   const canvasRef = useRef(null);
-  const imgRef = useRef(new Image());
   const [bgColor, setBgColor] = useState("#ffffff");
   const [imgDims, setImgDims] = useState({ width: 0, height: 0 });
   const [dragging, setDragging] = useState(false);
   const [initialMousePos, setInitialMousePos] = useState({ x: 0, y: 0 });
   const [initialImgDims, setInitialImgDims] = useState({ width: 0, height: 0 });
+  const [imgSrc, setImgSrc] = useState(null);
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setImgSrc(event.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   useEffect(() => {
-    const img = imgRef.current;
-    img.src = CanvasImg;
-    img.onload = () => {
-      const canvas = canvasRef.current;
-      const maxWidth = canvas.clientWidth;
-      const maxHeight = canvas.clientHeight;
-      const scale = Math.min(maxWidth / img.width, maxHeight / img.height);
-      const width = img.width * scale;
-      const height = img.height * scale;
-      setImgDims({ width, height });
-    };
-  }, []);
+    if (imgSrc) {
+      const img = new Image();
+      img.src = imgSrc;
+      img.onload = () => {
+        const canvas = canvasRef.current;
+        const maxWidth = canvas.clientWidth;
+        const maxHeight = canvas.clientHeight;
+        const scale = Math.min(maxWidth / img.width, maxHeight / img.height);
+        const width = img.width * scale;
+        const height = img.height * scale;
+        setImgDims({ width, height });
+      };
+    }
+  }, [imgSrc]);
 
   const drawImage = useCallback(() => {
+    if (!imgSrc) return;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
-    const img = imgRef.current;
-    canvas.width = imgDims.width;
-    canvas.height = imgDims.height;
-    ctx.fillStyle = bgColor;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0, 0, imgDims.width, imgDims.height);
-  }, [bgColor, imgDims]);
+    const img = new Image();
+    img.src = imgSrc;
+    img.onload = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, imgDims.width, imgDims.height);
+    };
+  }, [bgColor, imgDims, imgSrc]);
 
   useEffect(() => {
     if (imgDims.width && imgDims.height) {
@@ -71,6 +86,8 @@ const App = () => {
           onChange={(e) => setBgColor(e.target.value)}
         />
         <label>Select Background Color</label>
+        <input type="file" accept="image/*" onChange={handleImageUpload} />
+        <label>Upload Image</label>
       </div>
       <canvas
         ref={canvasRef}
@@ -78,16 +95,14 @@ const App = () => {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseOut={handleMouseUp}
-        //style={{ border: '1px solid #000', cursor: 'pointer', marginTop: '20px', maxWidth: '600px', maxHeight: '400px' }}
+        style={{
+          border: "1px solid #000",
+          cursor: "pointer",
+          marginTop: "20px",
+          //width: "600px",
+          //height: "400px",
+        }}
       ></canvas>
-      <span>
-        <span>
-          <p style={{ color: "black" }}>View this site on Netlify</p>
-          <a href="https://wonderful-queijadas-d54998.netlify.app">
-            Serah Nderi
-          </a>
-        </span>
-      </span>
     </div>
   );
 };
