@@ -82,7 +82,7 @@ const App = () => {
       ></canvas>
       <span>
         <span>
-          <p>View this site on Netlify</p>
+          <p style={{ color: "black" }}>View this site on Netlify</p>
           <a href="https://github.com/MundiaNderi/canvas">Serah Nderi</a>
         </span>
       </span>
